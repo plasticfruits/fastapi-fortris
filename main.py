@@ -7,6 +7,8 @@ import pandas as pd
 import numpy as np
 import requests
 import json
+from functions import *
+
 
 
 TEST = [{'year': '1900',
@@ -29,12 +31,6 @@ app = FastAPI(title="Fortris API", openapi_url="/openapi.json")
 api_router = APIRouter()
 
 
-# Load JSON end point
-source = 'https://data.cdc.gov/resource/w9j2-ggv5.json'
-url = requests.get(source)
-DATA = json.loads(url.text)
-DATA_DF = pd.DataFrame(DATA)
-
     
 @app.get("/")
 def read_root():
@@ -48,44 +44,28 @@ def search_recipes(sex: Optional[str] = None,
     """
     Get average life expectancy for sex, race and age
     """
+    # Load JSON end point
+    source = 'https://data.cdc.gov/resource/w9j2-ggv5.json'
+    url = requests.get(source)
+    DATA = json.loads(url.text)
+    DF = pd.DataFrame(DATA)
+    
+    # Get data
     if any(not x for x in (sex, race, year)):
-
-        vars_dict = {'sex': sex, 'race': race, 'year': year}
-        new_vars = []
-        for i,j in vars_dict.items():
-            if not vars_dict[i]:
-                continue
-            else:
-                new_vars.append(i)
-        
-        if len(new_vars)==2:
-            filter = DATA_DF.loc[(DATA_DF[new_vars[0]]==vars_dict[new_vars[0]]) & 
-                                 (DATA_DF[new_vars[1]]==vars_dict[new_vars[1]])] 
-            result = pd.to_numeric(filter['average_life_expectancy']).mean()
-            return {"average_life_expectancy": round(result, 2)}
-        
-        elif len(new_vars)==1:
-            filter = DATA_DF.loc[DATA_DF[new_vars[0]]==vars_dict[new_vars[0]]]
-            result = pd.to_numeric(filter['average_life_expectancy']).mean()
-            return {"average_life_expectancy": round(result, 2)}
-        
-        elif len(new_vars)==0:
-            result = pd.to_numeric(DATA_DF['average_life_expectancy']).mean()
-            return {"average_life_expectancy": round(result, 2)}
-        
-        else:
-            pass # raise error
-        
+        return life_expectancy_some(DF, sex, race, year)
     else:
-        filter = DATA_DF.loc[(DATA_DF['sex']==sex) & 
-                             (DATA_DF['race']==race) & 
-                             (DATA_DF['year']==year)] 
-        result = pd.to_numeric(filter['average_life_expectancy']).mean()
-        return {"average_life_expectancy": round(result, 2)}
+        return life_expectancy_all(DF, sex, race, year)
             
     
-    
-    
+@api_router.get("/unemployment/", status_code=200)
+def search_recipes(state: Optional[str] = None) -> dict:
+    """
+    Get average life expectancy for sex, race and age
+    TODO:
+    # - if no value then return list of states
+    """  
+    df = fetch_unemployment_data() 
+    return get_unemployment_rate(df, state)
 
 
 app.include_router(api_router)
