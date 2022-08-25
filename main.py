@@ -2,41 +2,35 @@ from typing import Union
 #import uvicorn
 from fastapi import FastAPI, APIRouter
 from typing import Optional
-from varname import nameof
+import xml.etree.ElementTree as ET
 import pandas as pd
-import numpy as np
 import requests
 import json
 from functions import *
 
+###
+from bs4 import BeautifulSoup
+from datetime import date, timedelta
 
 
-TEST = [{'year': '1900',
-  'race': 'Black',
-  'sex': 'Male',
-  'average_life_expectancy': '47.3',
-  'mortality': '2518.0'},
- {'year': '1901',
-  'race': 'All Races',
-  'sex': 'Both Sexes',
-  'average_life_expectancy': '49.1',
-  'mortality': '2473.1'},
- {'year': '1902',
-  'race': 'Black',
-  'sex': 'Female',
-  'average_life_expectancy': '51.5',
-  'mortality': '2301.3'}]
+# Vars
+
+# Read weather API
+with open("./secrets.json") as f:
+    file = json.load(f)
+WEATHER_API_KEY = file["key"]
+f.close()
+
 
 app = FastAPI(title="Fortris API", openapi_url="/openapi.json")
 api_router = APIRouter()
 
-
-    
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 
+# Task 1 --- Life Expectancy ---
 @api_router.get("/life_expectancy/", status_code=200)
 def search_recipes(sex: Optional[str] = None,
                    race: Optional[str] = None,
@@ -56,7 +50,7 @@ def search_recipes(sex: Optional[str] = None,
     else:
         return life_expectancy_all(DF, sex, race, year)
             
-    
+# Task 2 --- Unemployment ---
 @api_router.get("/unemployment/", status_code=200)
 def search_recipes(state: Optional[str] = None) -> dict:
     """
@@ -67,6 +61,17 @@ def search_recipes(state: Optional[str] = None) -> dict:
     df = fetch_unemployment_data() 
     return get_unemployment_rate(df, state)
 
+
+# Task 4 --- Weather ---
+@app.get("/weather/")
+def get_weather():
+    """
+    Get weather history for last 7 days based on user's IP address
+    """
+
+    return get_weather_history()
+    
+ 
 
 app.include_router(api_router)
 

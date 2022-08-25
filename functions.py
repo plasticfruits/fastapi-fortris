@@ -1,7 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
 import pandas as pd
-from datetime import datetime
+from datetime import date, timedelta
+import json
 
 
 ### Task 1 --- Life Expectancy ---
@@ -42,6 +44,8 @@ def life_expectancy_all(DF, sex, race, year):
                          (DF['year']==year)] 
     result = pd.to_numeric(filter['average_life_expectancy']).mean()
     return {"average_life_expectancy": round(result, 2)}
+
+
 
 ### Task 2 --- Unemployment ---
 headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"}
@@ -95,4 +99,42 @@ def get_all_states(df):
 
 
 ### Task 4 --- Weather ---
+def get_ip():
+    response = requests.get('https://api64.ipify.org?format=json').json()
+    return response["ip"]
 
+def get_weather_history():
+    WEATHER_API_KEY = '0d10212baecb4addb8261304222508' # bad practice, but for the sake of the exercise
+    ip = get_ip()
+    
+    # generate range of dates & reverse order
+    date_range = pd.date_range(start=date.today() - timedelta(days=7),
+                               end=str(date.today())).strftime("%Y-%m-%d").tolist()
+    date_range = list(reversed(date_range))
+    
+    weather_all = json.loads('{}')
+    counter = 0
+    for i in date_range:
+        params = {'key': WEATHER_API_KEY,
+                  'q': ip,
+                  'dt': i}
+        
+        response = requests.get('http://api.weatherapi.com/v1/history.xml', params=params)
+        xml_data = response.content
+        tree = ET.fromstring(xml_data)
+        
+        if counter==0:
+            weather_region = {'Location': tree.find('location/name').text,
+                      'Region': tree.find('location/region').text,
+                      'Country': tree.find('location/country').text}
+            weather_all.update(weather_region)
+            counter += 1
+            
+        else:
+            weather_data = {tree.find('forecast/forecastday/date').text : 
+                {'Condition': tree.find('forecast/forecastday/day/condition/text').text,
+                 'Minimum °C': tree.find('forecast/forecastday/day/mintemp_c').text,
+                 'Maximum °C': tree.find('forecast/forecastday/day/maxtemp_c').text}}
+            weather_all.update(weather_data)
+            counter += 1
+    return weather_all
