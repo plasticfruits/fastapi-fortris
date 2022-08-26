@@ -97,12 +97,11 @@ def get_all_states(df):
 
 ### Task 3 --- Google Trends ---
 def get_google_trends(phrase, start_date, end_date):
+    """
+    """
     phrase = [phrase]
     pytrends = TrendReq() 
-    
-    """ if not phrase:
-            raise ValueError("phrase parameter is mandatory")
-    """   
+     
     if not (start_date and end_date):
         # define range for last 14 days
         date_range = pd.date_range(start=date.today() - timedelta(days=14),
@@ -114,7 +113,7 @@ def get_google_trends(phrase, start_date, end_date):
         # filter by date range and clean
         df = df[df['date'].isin(date_range)].drop('isPartial',axis=1)
         df.date = df.date.dt.strftime('%Y-%m-%d')
-        df.rename(columns = {phrase[0]:'count'}, inplace = True)
+        df.rename(columns = {phrase[0]:'interest'}, inplace = True)
         
         response = {phrase[0] : json.loads(df.to_json(orient='records'))}
         return response
@@ -125,7 +124,7 @@ def get_google_trends(phrase, start_date, end_date):
         
         # filter by date range and clean
         df.date = df.date.dt.strftime('%Y-%m-%d')
-        df.rename(columns = {phrase[0]:'count'}, inplace = True)
+        df.rename(columns = {phrase[0]:'interest'}, inplace = True)
         
         response = {phrase[0] : json.loads(df.to_json(orient='records'))}
         return response
@@ -133,10 +132,14 @@ def get_google_trends(phrase, start_date, end_date):
 
 ### Task 4 --- Weather ---
 def get_ip():
+    """
+    """
     response = requests.get('https://api64.ipify.org?format=json').json()
     return response["ip"]
 
 def get_weather_history():
+    """
+    """
     WEATHER_API_KEY = '0d10212baecb4addb8261304222508' # bad practice, but for the sake of the exercise
     ip = get_ip()
     
