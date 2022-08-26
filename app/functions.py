@@ -10,7 +10,6 @@ import json
 ### Task 1 --- Life Expectancy ---
 def life_expectancy_some(DF, sex, race, year):
     """
-    return {"Hello": "World"}
     """
     vars_dict = {'sex': sex, 'race': race, 'year': year}
     new_vars = []
@@ -40,6 +39,8 @@ def life_expectancy_some(DF, sex, race, year):
 
 
 def life_expectancy_all(DF, sex, race, year):
+    """
+    """
     filter = DF.loc[(DF['sex']==sex) & 
                          (DF['race']==race) & 
                          (DF['year']==year)] 

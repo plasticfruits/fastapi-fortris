@@ -31,7 +31,11 @@ def search_recipes(sex: Optional[str] = None,
                    race: Optional[str] = None,
                    year: Optional[str] = None) -> dict:
     """
-    Get average life expectancy for sex, race and age
+    Get average life expectancy for sex, race and age.
+    List of possible values:
+        - sex: [Male, Female, Both Sexes]
+        - race: [Black, White, All Races]
+        - year: [1900:2018]
     """
     # Load JSON end point
     source = 'https://data.cdc.gov/resource/w9j2-ggv5.json'
@@ -50,9 +54,9 @@ def search_recipes(sex: Optional[str] = None,
 @api_router.get("/unemployment/", status_code=200)
 def search_recipes(state: str) -> dict:
     """
-    Get average life expectancy for sex, race and age
-    TODO:
-    # - if no value then return list of states
+    Get unemployment rate for a given state in the USA.
+    List of possible values:
+        - state: [Alabama, Alaska, ..., Wyoming]
     """  
     df = fetch_unemployment_data() 
     return get_unemployment_rate(df, state)
@@ -65,7 +69,11 @@ def search_recipes(phrase: str,
                    end_date: Optional[str] = None) -> dict:
     """
     Get trends for given phrase and date range. If no date range is given,
-    return trends for the last 14 days.
+    trends for the last 14 days are returned.
+    List of possible values:
+        - phrase: [any phrase] (e.g. "Day dreaming")
+        - start_date: [YYYY-MM-DD] (e.g. "2021-01-01")
+        - end_date: [YYYY-MM-DD] (e.g. "2021-12-31")
     """
     
     return get_google_trends(phrase, start_date, end_date)
@@ -75,7 +83,9 @@ def search_recipes(phrase: str,
 @app.get("/weather/", status_code=200)
 def get_weather():
     """
-    Get weather history for last 7 days based on user's IP address
+    Get weather history for last 7 days based on location of IP address
+    List of possible values:
+        - None
     """
 
     return get_weather_history()
@@ -86,7 +96,9 @@ def get_weather():
 async def get_trends_and_weather(phrase: str) -> dict:
     """
     Get trends and weather for given phrase in the last 7 days.
-    NOTE: Google Trends API does not return last 3 days of data
+    Note: Google Trends API does not return last 3 days of data
+    List of possible values:
+        - Phrase: [any phrase] (e.g. "REM music band")
     """
     trends = get_google_trends(phrase)
     trends_df = pd.DataFrame(trends[phrase])
