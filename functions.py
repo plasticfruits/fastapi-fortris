@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
+from pytrends.request import TrendReq
 import pandas as pd
 from datetime import date, timedelta
 import json
@@ -95,7 +96,40 @@ def get_all_states(df):
 
 
 ### Task 3 --- Google Trends ---
-
+def get_google_trends(phrase, start_date, end_date):
+    phrase = [phrase]
+    pytrends = TrendReq() 
+    #phrase = ["lucid dreams"] 
+    
+    """ if not phrase:
+            raise ValueError("phrase parameter is mandatory")
+    """   
+    if not (start_date and end_date):
+        # define range for last 14 days
+        date_range = pd.date_range(start=date.today() - timedelta(days=14),
+                                   end=str(date.today())).strftime("%Y-%m-%d").tolist()
+        # get trends 
+        pytrends.build_payload(phrase, cat=0, timeframe="today 1-m")
+        df = pytrends.interest_over_time().reset_index()
+        
+        # filter by date range and clean
+        df = df[df['date'].isin(date_range)].drop('isPartial',axis=1)
+        df.date = df.date.dt.strftime('%Y-%m-%d')
+        df.rename(columns = {phrase[0]:'count'}, inplace = True)
+        
+        response = {phrase[0]:df.to_json(orient='records')}
+        return response
+    
+    else:
+        pytrends.build_payload(phrase, cat=0, timeframe=f'{start_date} {end_date}')
+        df = pytrends.interest_over_time().reset_index().drop('isPartial',axis=1)
+        
+        # filter by date range and clean
+        df.date = df.date.dt.strftime('%Y-%m-%d')
+        df.rename(columns = {phrase[0]:'count'}, inplace = True)
+        
+        response = {phrase[0]:df.to_json(orient='records')}
+        return response
 
 
 ### Task 4 --- Weather ---
@@ -138,3 +172,7 @@ def get_weather_history():
             weather_all.update(weather_data)
             counter += 1
     return weather_all
+
+
+
+### Task 5 --- Google Trends ---

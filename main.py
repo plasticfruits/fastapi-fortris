@@ -1,4 +1,3 @@
-from typing import Union
 #import uvicorn
 from fastapi import FastAPI, APIRouter
 from typing import Optional
@@ -7,15 +6,10 @@ import pandas as pd
 import requests
 import json
 from functions import *
-
-###
-from bs4 import BeautifulSoup
-from datetime import date, timedelta
+from pytrends.request import TrendReq
 
 
-# Vars
-
-# Read weather API
+# Read weather API from local file // .gitignore
 with open("./secrets.json") as f:
     file = json.load(f)
 WEATHER_API_KEY = file["key"]
@@ -62,8 +56,25 @@ def search_recipes(state: Optional[str] = None) -> dict:
     return get_unemployment_rate(df, state)
 
 
+
+
+
+# Task 3 --- Trends ---
+@api_router.get("/trends/")
+def search_recipes(phrase: str,
+                   start_date: Optional[str] = None,
+                   end_date: Optional[str] = None) -> dict:
+    """
+    Get trends for given phrase and date range. If no date range is given,
+    return trends for the last 14 days.
+    """
+    
+    return get_google_trends(phrase, start_date, end_date)
+    
+
+
 # Task 4 --- Weather ---
-@app.get("/weather/")
+@app.get("/weather/", status_code=200)
 def get_weather():
     """
     Get weather history for last 7 days based on user's IP address
