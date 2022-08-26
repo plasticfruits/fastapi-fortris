@@ -1,16 +1,14 @@
-#import uvicorn
 from fastapi import FastAPI, APIRouter
 from typing import Optional
 import xml.etree.ElementTree as ET
 import pandas as pd
 import requests
 import json
-from functions import *
-#from pytrends.request import TrendReq
+from .functions import *
 
 
 # Read weather API from local file // .gitignore
-""" with open("./secrets.json") as f:
+""" with open("../secrets.json") as f:
     file = json.load(f)
 WEATHER_API_KEY = file["key"]
 f.close() """
@@ -19,9 +17,12 @@ f.close() """
 app = FastAPI(title="Fortris API", openapi_url="/openapi.json")
 api_router = APIRouter()
 
+
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"About": "This is a simple FastAPI for the fortris.com Python Developer challenge",
+            "Docs & Testing": "Check the documentation at /docs",
+            "With ♥ by": "@plasticfruits"}
 
 
 # Task 1 --- Life Expectancy ---
@@ -43,10 +44,11 @@ def search_recipes(sex: Optional[str] = None,
         return life_expectancy_some(DF, sex, race, year)
     else:
         return life_expectancy_all(DF, sex, race, year)
+          
             
 # Task 2 --- Unemployment ---
 @api_router.get("/unemployment/", status_code=200)
-def search_recipes(state: Optional[str] = None) -> dict:
+def search_recipes(state: str) -> dict:
     """
     Get average life expectancy for sex, race and age
     TODO:
@@ -56,11 +58,8 @@ def search_recipes(state: Optional[str] = None) -> dict:
     return get_unemployment_rate(df, state)
 
 
-
-
-
 # Task 3 --- Trends ---
-@api_router.get("/trends/")
+@api_router.get("/trends/", status_code=200)
 def search_recipes(phrase: str,
                    start_date: Optional[str] = None,
                    end_date: Optional[str] = None) -> dict:
@@ -70,7 +69,6 @@ def search_recipes(phrase: str,
     """
     
     return get_google_trends(phrase, start_date, end_date)
-    
 
 
 # Task 4 --- Weather ---
@@ -82,11 +80,26 @@ def get_weather():
 
     return get_weather_history()
     
- 
+    
+# Task 5 --- Trends & Weather ---
+@api_router.get("/trends_weather/", status_code=200)
+async def get_trends_and_weather(phrase: str) -> dict:
+    """
+    Get trends and weather for given phrase in the last 7 days.
+    NOTE: Google Trends API does not return last 3 days of data
+    """
+    trends = get_google_trends(phrase)
+    trends_df = pd.DataFrame(trends[phrase])
+    
+    # Data Wrangling
+    weather = get_weather_history()
+    weather_df = pd.DataFrame(pd.Series(weather).iloc[3:]).rename(columns = {0:'weather'})
+    merge_df = pd.merge(weather_df, trends_df, left_index=True, right_on='date')
+    merge_df = merge_df[['date', 'interest', 'weather']]
+    merge_dict = merge_df.to_dict('records')
+
+    return merge_dict
+    
 
 app.include_router(api_router)
 
-
-""" # Debugging
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000) """

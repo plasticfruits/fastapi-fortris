@@ -96,7 +96,7 @@ def get_all_states(df):
 
 
 ### Task 3 --- Google Trends ---
-def get_google_trends(phrase, start_date, end_date):
+def get_google_trends(phrase, start_date=None, end_date=None):
     """
     """
     phrase = [phrase]
