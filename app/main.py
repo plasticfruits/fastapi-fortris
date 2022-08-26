@@ -6,14 +6,14 @@ import pandas as pd
 import requests
 import json
 from functions import *
-from pytrends.request import TrendReq
+#from pytrends.request import TrendReq
 
 
 # Read weather API from local file // .gitignore
-with open("./secrets.json") as f:
+""" with open("./secrets.json") as f:
     file = json.load(f)
 WEATHER_API_KEY = file["key"]
-f.close()
+f.close() """
 
 
 app = FastAPI(title="Fortris API", openapi_url="/openapi.json")
