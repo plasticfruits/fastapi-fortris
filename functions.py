@@ -99,7 +99,6 @@ def get_all_states(df):
 def get_google_trends(phrase, start_date, end_date):
     phrase = [phrase]
     pytrends = TrendReq() 
-    #phrase = ["lucid dreams"] 
     
     """ if not phrase:
             raise ValueError("phrase parameter is mandatory")
@@ -117,7 +116,7 @@ def get_google_trends(phrase, start_date, end_date):
         df.date = df.date.dt.strftime('%Y-%m-%d')
         df.rename(columns = {phrase[0]:'count'}, inplace = True)
         
-        response = {phrase[0]:df.to_json(orient='records')}
+        response = {phrase[0] : json.loads(df.to_json(orient='records'))}
         return response
     
     else:
@@ -128,7 +127,7 @@ def get_google_trends(phrase, start_date, end_date):
         df.date = df.date.dt.strftime('%Y-%m-%d')
         df.rename(columns = {phrase[0]:'count'}, inplace = True)
         
-        response = {phrase[0]:df.to_json(orient='records')}
+        response = {phrase[0] : json.loads(df.to_json(orient='records'))}
         return response
 
 
